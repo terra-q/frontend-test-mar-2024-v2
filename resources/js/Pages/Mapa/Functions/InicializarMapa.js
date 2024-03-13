@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'; // Importa a biblioteca day.js para formatação de data e hora
 import { ZoomInOut } from './Zoom/ZoomInOut.js';
 
 let logMessages = false;
@@ -22,17 +23,18 @@ function AdicionaCoordenadasMouse(map, configuracoesLeaflet) {
         emptyString: "Coordenadas indisponíveis",
         formatter: function (lng, lat) {
             let pt = projCRS.project(L.latLng(lat, lng));
+            let dateTime = dayjs().format('DD/MM/YYYY HH:mm:ss'); // Obtém a data e hora formatadas
             if (sistema == 'utm') {
-                return "" + pt.y.toFixed(0) + " N : " + pt.x.toFixed(0) + " E";
+                return "" + pt.y.toFixed(0) + " N : " + pt.x.toFixed(0) + " E" + "<br>" + dateTime;
             }
-            return "Lat.:" + pt.y.toFixed(5) + " | Lon.:" + pt.x.toFixed(5) + "";
+            return "Lat.:" + pt.y.toFixed(5) + " | Lon.:" + pt.x.toFixed(5) + "<br>" + dateTime;
         }
     });
     map.addControl(mousePosControl);
     logMessages && console.log("   [CreateMap] Coordenadas do mouse adicionada ao mapa.");
 }
 
-function AdicionaEscala(map, largura=150, posicao="bottomleft") {
+function AdicionaEscala(map, largura = 150, posicao = "bottomleft") {
     let escala = L.control.scale({
         position: posicao,
         metric: true,
@@ -44,7 +46,7 @@ function AdicionaEscala(map, largura=150, posicao="bottomleft") {
 
 function FuncaoVisaoInicial(map, x, y, z) {
     window.SetaVisaoInicial = function () {
-        return map.setView([y,x], z);
+        return map.setView([y, x], z);
     };
     logMessages && console.log("   [CreateMap] Função de resetar para visão inicial adicionada.");
 }
@@ -66,10 +68,14 @@ function CriaMenuContexto(map, configuracoesLeaflet) {
     let popup = L.popup();
     map.on("contextmenu", (e) => {
         let coordenada = projCRS.project(L.latLng(e.latlng.lat, e.latlng.lng));
+        let dateTime = dayjs().format('DD/MM/YYYY HH:mm:ss'); // Obtém a data e hora formatadas
+        let content = "";
         if (sistema == 'utm') {
-            let content = "<b>N</b>: " + coordenada.y.toFixed(0) + "<br><b>E</b>: " + coordenada.x.toFixed(0) + "<br>";
+            content = "<b>N</b>: " + coordenada.y.toFixed(0) + "<br><b>E</b>: " + coordenada.x.toFixed(0) + "<br>";
+        } else {
+            content = "<b>Lat.</b>: " + coordenada.y.toFixed(5) + " <br><b>Lon.</b>: " + coordenada.x.toFixed(5) + "<br>";
         }
-        let content = "<b>Lat.</b>: " + coordenada.y.toFixed(5) + " <br><b>Lon.</b>: " + coordenada.x.toFixed(5) + "<br>";
+        content += "<i class='far fa-calendar'></i> " + dateTime; // Adiciona o ícone de calendário e a data/hora
         popup.setLatLng(e.latlng).setContent(content).openOn(map);
     });
     logMessages && console.log("   [CreateMap] Menu de contexto adicionado ao mapa.");
@@ -81,9 +87,9 @@ function FuncaoMapaInformacoes(mapa) {
         let centro = mapa.getCenter();
         let bounds = mapa.getBounds();
         let informacoes = {
-            zoom:zoom,
-            centro:centro,
-            bounds:bounds,
+            zoom: zoom,
+            centro: centro,
+            bounds: bounds,
             xyz: {
                 x: centro.lng,
                 y: centro.lat,
@@ -101,7 +107,7 @@ function FuncaoMapaInformacoes(mapa) {
             iconAnchor: [12, 41],
             popupAnchor: [1, -34],
         });
-        let marker = L.marker([userInputLat, userInputLng], {icon : markerIcon}).addTo(mapa);
+        let marker = L.marker([userInputLat, userInputLng], { icon: markerIcon }).addTo(mapa);
         mapa.setView([userInputLat, userInputLng], 15);
         return informacoes;
     };
@@ -117,4 +123,4 @@ export {
     AdicionaAttribution,
     CriaMenuContexto,
     FuncaoMapaInformacoes
-}
+};
