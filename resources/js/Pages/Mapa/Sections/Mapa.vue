@@ -48,7 +48,7 @@ onMounted(() => {
     FuncaoMapaInformacoes(map.value);
     
     // Adiciona as coordenadas do mouse no canto inferior esquerdo do mapa
-    AdicionaCoordenadasMouse(map.value, { ...configsMapa.configuracoesLeaflet, position: 'bottomleft' });
+    AdicionaCoordenadasMouse(map.value, { ...configsMapa.configuracoesLeaflet, position: 'bottomright' });
 
     map.value.doubleClickZoom.disable();
 
@@ -72,26 +72,25 @@ onMounted(() => {
         rasters.forEach(raster => raster.nome == nomeRaster ? ToggleRasterTile(map.value, raster) : null);
     };
 });
+const zoomIn = () => {
+    map.value.zoomIn();
+};
+
+const zoomOut = () => {
+    map.value.zoomOut();
+};
 </script>
 
 <template>
-    <div id="map" class="z-[5] h-[calc(100vh)] max-h-[calc(100vh)]"></div>
+    <div>
+        <div id="map" class="z-[5] h-[calc(100vh)] max-h-[calc(100vh)]"></div>
+        <div class="absolute top-0 left-0 mt-8 ml-8 z-[10]">
+            <button @click="zoomIn" class="bg-white px-3 py-2 rounded-md shadow-md mr-2">+</button>
+            <button @click="zoomOut" class="bg-white px-3 py-2 rounded-md shadow-md">-</button>
+        </div>
+    </div>
 </template>
 
 <style scoped>
-/* Estilos para o componente de coordenadas do mouse */
-.leaflet-control-mouseposition {
-    font-size: 16px; /* Aumenta o tamanho da fonte */
-    background-color: rgba(255, 255, 255, 0.5); /* Define o fundo branco com opacidade */
-    position: absolute; /* Fixa o componente */
-    bottom: 10px; /* Define a distância do fundo da tela */
-    left: 10px; /* Define a distância da borda esquerda da tela */
-    padding: 5px; /* Adiciona um espaço ao redor do texto */
-    border-radius: 5px; /* Adiciona bordas arredondadas */
-}
 
-.leaflet-popup-content {
-    padding-top: 10px; /* Adicione espaçamento acima do conteúdo do popup */
-    padding-bottom: 10px; /* Adicione espaçamento abaixo do conteúdo do popup */
-}
 </style>
