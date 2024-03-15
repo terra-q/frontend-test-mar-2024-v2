@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'; // Importa a biblioteca day.js para formatação de data e hora
 import { ZoomInOut } from './Zoom/ZoomInOut.js';
 
 let logMessages = false;
@@ -17,22 +18,37 @@ function AdicionaCoordenadasMouse(map, configuracoesLeaflet) {
     let sistema = configuracoesLeaflet.sistema;
     let proj4text = configuracoesLeaflet.proj4text;
     let projCRS = new L.Proj.CRS(crs, proj4text);
+
     let mousePosControl = L.control.mousePosition({
-        position: "bottomright",
+        position: "bottomleft",
         emptyString: "Coordenadas indisponíveis",
         formatter: function (lng, lat) {
             let pt = projCRS.project(L.latLng(lat, lng));
+            let dateTime = dayjs().format('DD/MM/YYYY HH:mm:ss'); // Obtém a data e hora formatadas
+            let coordsText;
             if (sistema == 'utm') {
-                return "" + pt.y.toFixed(0) + " N : " + pt.x.toFixed(0) + " E";
+                coordsText = `${pt.y.toFixed(0)} N : ${pt.x.toFixed(0)} E<br><b>DATA/HORA:</b> ${dateTime}`;
+            } else {
+                coordsText = `Lat.: ${pt.y.toFixed(5)} | Lon.: ${pt.x.toFixed(5)}<br> ${dateTime}`;
             }
-            return "Lat.:" + pt.y.toFixed(5) + " | Lon.:" + pt.x.toFixed(5) + "";
+            return coordsText;
         }
     });
+    
     map.addControl(mousePosControl);
+
+    // Aplicar estilos CSS ao componente de coordenadas do mouse
+    let controlContainer = mousePosControl.getContainer();
+    controlContainer.style.fontSize = "18px"; 
+    controlContainer.style.backgroundColor = "rgba(255, 255, 255, 0.5)"; 
+    controlContainer.style.padding = "10px";
+    controlContainer.style.borderRadius = "5px";
+
     logMessages && console.log("   [CreateMap] Coordenadas do mouse adicionada ao mapa.");
 }
 
-function AdicionaEscala(map, largura=150, posicao="bottomleft") {
+
+function AdicionaEscala(map, largura = 150, posicao = "bottomright") {
     let escala = L.control.scale({
         position: posicao,
         metric: true,
@@ -44,7 +60,7 @@ function AdicionaEscala(map, largura=150, posicao="bottomleft") {
 
 function FuncaoVisaoInicial(map, x, y, z) {
     window.SetaVisaoInicial = function () {
-        return map.setView([y,x], z);
+        return map.setView([y, x], z);
     };
     logMessages && console.log("   [CreateMap] Função de resetar para visão inicial adicionada.");
 }
@@ -64,16 +80,23 @@ function CriaMenuContexto(map, configuracoesLeaflet) {
     let proj4text = configuracoesLeaflet.proj4text;
     let projCRS = new L.Proj.CRS(crs, proj4text);
     let popup = L.popup();
+
     map.on("contextmenu", (e) => {
         let coordenada = projCRS.project(L.latLng(e.latlng.lat, e.latlng.lng));
+        let dateTime = dayjs().format('DD/MM/YYYY HH:mm:ss'); // Obtém a data e hora formatadas
+        let content = "";
         if (sistema == 'utm') {
-            let content = "<b>N</b>: " + coordenada.y.toFixed(0) + "<br><b>E</b>: " + coordenada.x.toFixed(0) + "<br>";
+            content = "<div style='margin-bottom: 10px;'><b>N</b>: " + coordenada.y.toFixed(0) + "<br><b>E</b>: " + coordenada.x.toFixed(0) + "</div>";
+        } else {
+            content = "<div><b>Lat.</b>: " + coordenada.y.toFixed(5) + "</div><div style='margin-top: 10px;'><b>Lon.</b>: " + coordenada.x.toFixed(5) + "</div>";
         }
-        let content = "<b>Lat.</b>: " + coordenada.y.toFixed(5) + " <br><b>Lon.</b>: " + coordenada.x.toFixed(5) + "<br>";
+        content += "<div style='margin-top: 10px;'><b>Data/Hora:</b> " + dateTime + "</div>"; // Adiciona a data/hora ao conteúdo do popup
+
         popup.setLatLng(e.latlng).setContent(content).openOn(map);
     });
     logMessages && console.log("   [CreateMap] Menu de contexto adicionado ao mapa.");
 }
+
 
 function FuncaoMapaInformacoes(mapa) {
     window.MapaInformacoes = function () {
@@ -81,9 +104,9 @@ function FuncaoMapaInformacoes(mapa) {
         let centro = mapa.getCenter();
         let bounds = mapa.getBounds();
         let informacoes = {
-            zoom:zoom,
-            centro:centro,
-            bounds:bounds,
+            zoom: zoom,
+            centro: centro,
+            bounds: bounds,
             xyz: {
                 x: centro.lng,
                 y: centro.lat,
@@ -101,7 +124,7 @@ function FuncaoMapaInformacoes(mapa) {
             iconAnchor: [12, 41],
             popupAnchor: [1, -34],
         });
-        let marker = L.marker([userInputLat, userInputLng], {icon : markerIcon}).addTo(mapa);
+        let marker = L.marker([userInputLat, userInputLng], { icon: markerIcon }).addTo(mapa);
         mapa.setView([userInputLat, userInputLng], 15);
         return informacoes;
     };
@@ -117,4 +140,4 @@ export {
     AdicionaAttribution,
     CriaMenuContexto,
     FuncaoMapaInformacoes
-}
+};

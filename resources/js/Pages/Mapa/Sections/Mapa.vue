@@ -35,52 +35,62 @@ let rasters = props.projeto.rasters;
 let map = ref(null);
 
 onMounted(() => {
-    // Objeto com as configurações do Leaflet para criação do objeto map
     let configs = ConfigsLeaflet(configsMapa);
     
-    // Cria o objeto map do Leaflet
-    map = L.map('map', configs);
+    map.value = L.map('map', configs);
 
-    // Adiciona a função "SetaVisaoInicial" de resetar a visão inicial do mapa
-    FuncaoVisaoInicial(map, configsMapa.visaoInicial.x, configsMapa.visaoInicial.y, configsMapa.visaoInicial.z);
+    FuncaoVisaoInicial(map.value, configsMapa.visaoInicial.x, configsMapa.visaoInicial.y, configsMapa.visaoInicial.z);
 
-    // Seta a visualização inicial do mapa
     SetaVisaoInicial();
 
-    // Adiciona as funções de zoom do mapa
-    FuncoesZoom(map);
+    FuncoesZoom(map.value);
 
-    // Adiciona a função "MapaInformacoes" para mostrar as informações do mapa
-    FuncaoMapaInformacoes(map);
+    FuncaoMapaInformacoes(map.value);
     
-    // Adiciona as coordenadas do mouse no canto inferior direito do mapa
-    configsMapa.funcionalidades.coordenadasMouse ? AdicionaCoordenadasMouse(map, configsMapa.configuracoesLeaflet) : configsMapa.funcionalidades.coordenadasMouse;
+    // Adiciona as coordenadas do mouse no canto inferior esquerdo do mapa
+    AdicionaCoordenadasMouse(map.value, { ...configsMapa.configuracoesLeaflet, position: 'bottomright' });
 
-    // Desabilitar o clique-duplo para função de zoom (nativa do Leaflet)
-    map.doubleClickZoom.disable();
+    map.value.doubleClickZoom.disable();
 
-    // Adiciona escala ao mapa caso configsMapa.funcionalidades.escala seja true
-    configsMapa.funcionalidades.escala ? AdicionaEscala(map) : configsMapa.funcionalidades.escala;
+    // Adiciona escala ao mapa
+    configsMapa.funcionalidades.escala ? AdicionaEscala(map.value) : configsMapa.funcionalidades.escala;
 
-    // Adiciona atribuições (fonte de dados) ao mapa    
-    configsMapa.funcionalidades.atribuicoes ? AdicionaAttribution(map, configsMapa.configuracoesLeaflet.atribuicaoPrefixo) : map.attributionControl.remove();
-    
-    // Desativa o clique do botão direito para evitar menu de contexto do navegador e cria o menu de contexto (clique direito com coordenadas)
-    configsMapa.funcionalidades.menuContexto ? CriaMenuContexto(map, configsMapa.configuracoesLeaflet) : configsMapa.funcionalidades.menuContexto;
+    // Adiciona atribuições (fonte de dados) ao mapa
+    configsMapa.funcionalidades.atribuicoes ? AdicionaAttribution(map.value, configsMapa.configuracoesLeaflet.atribuicaoPrefixo) : map.value.attributionControl.remove();
+
+    // Cria menu de contexto (clique direito com coordenadas)
+    configsMapa.funcionalidades.menuContexto ? CriaMenuContexto(map.value, configsMapa.configuracoesLeaflet) : configsMapa.funcionalidades.menuContexto;
 
     // Adiciona o basemap padrão do mapa (TileLayers)
-    AdicionaBasemapPadrao(map, rasters);
+    AdicionaBasemapPadrao(map.value, rasters);
 
     // Adiciona os overlays (TileLayers)
-    AdicionaOverlaysPadrao(map, rasters);
+    AdicionaOverlaysPadrao(map.value, rasters);
 
     // Cria a função "ToggleRaster" para alternar a visualização dos overlays
     window.ToggleRaster = function (nomeRaster) {
-        rasters.forEach(raster => raster.nome == nomeRaster ? ToggleRasterTile(map, raster) : null);
+        rasters.forEach(raster => raster.nome == nomeRaster ? ToggleRasterTile(map.value, raster) : null);
     };
 });
+const zoomIn = () => {
+    map.value.zoomIn();
+};
+
+const zoomOut = () => {
+    map.value.zoomOut();
+};
 </script>
 
 <template>
-    <div id="map" class="z-[5] h-[calc(100vh)] max-h-[calc(100vh)]"></div>
+    <div>
+        <div id="map" class="z-[5] h-[calc(100vh)] max-h-[calc(100vh)]"></div>
+        <div class="absolute top-0 left-0 mt-8 ml-8 z-[10]">
+            <button @click="zoomIn" class="bg-white px-3 py-2 rounded-md shadow-md mr-2">+</button>
+            <button @click="zoomOut" class="bg-white px-3 py-2 rounded-md shadow-md">-</button>
+        </div>
+    </div>
 </template>
+
+<style scoped>
+
+</style>
